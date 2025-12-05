@@ -3,157 +3,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Poster Generator Pro</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>AI Poster Generation</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- RESET & BASIC SETUP --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a; /* Dark Blue/Black */
+            /* Added a poster-like background graphic */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(129, 140, 248, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(192, 132, 252, 0.2) 0%, transparent 40%),
+                linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Center vertically */
+            padding: 20px;
+            overflow-y: auto; 
+        }
+
+        /* --- MAIN CARD CONTAINER --- */
+        .container {
+            width: 100%;
+            max-width: 550px; /* Slightly wider for poster feel */
+            background: rgba(30, 41, 59, 0.8); /* Slightly more opaque */
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* --- NEW INTRO SECTION --- */
+        .intro-section {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .main-heading {
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .hero-desc {
+            color: #cbd5e1;
+            font-size: 1rem;
+            line-height: 1.5;
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        /* --- INPUT SECTION --- */
+        .input-group {
+            position: relative;
+        }
+
+        label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 18px;
+            color: white;
+            font-size: 1.1rem;
+            resize: vertical;
+            min-height: 120px;
+            outline: none;
+            transition: 0.3s;
+        }
+        textarea:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        /* --- STYLE SELECTOR --- */
+        .style-wrapper {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .style-wrapper::-webkit-scrollbar { display: none; }
+
+        .style-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #334155;
+            padding: 10px 18px;
+            border-radius: 25px;
+            color: #cbd5e1;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .style-btn:hover { background: rgba(255,255,255,0.1); border-color: #cbd5e1; }
+        .style-btn.active {
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(129, 140, 248, 0.3);
+        }
+
+        /* --- ADVANCED TOGGLE --- */
+        .advanced-toggle {
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+            padding: 10px 0;
+        }
+        .advanced-toggle:hover { color: white; }
+
+        .advanced-options {
+            display: none;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px dashed #334155;
+        }
+        .advanced-options.show { display: block; animation: slideDown 0.3s ease; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            outline: none;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        input[type="text"]:focus, select:focus { border-color: #818cf8; }
+
+        /* --- GENERATE BUTTON --- */
+        .gen-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            background-size: 200% auto;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.5);
+        }
+        .gen-btn:hover {
+            background-position: right center;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px -5px rgba(168, 85, 247, 0.6);
+        }
+        .gen-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* --- RESULT AREA --- */
+        .result-area {
+            margin-top: 10px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.3);
+            position: relative;
+            min-height: 400px; /* Taller default height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #334155;
+        }
+
+        .result-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+        .result-img.loaded { opacity: 1; }
+
+        .loader {
+            position: absolute;
+            color: #818cf8;
+            font-size: 3rem;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .loader span { font-size: 1.2rem; font-weight: 600; color: white; }
+
+        /* Download Button floating on image */
+        .dl-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(5px);
+            color: #0f172a;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .dl-btn:hover { transform: scale(1.15); background: white; color: #6366f1; }
+
+        @media (max-width: 600px) {
+            .hero-title { font-size: 1.8rem; }
+            .container { padding: 20px; }
+        }
+
+    </style>
 </head>
 <body>
-    <div class="bg-animated"></div>
-    
-    <header>
-        <div class="container py-3">
-            <div class="logo">
-                <i class="fas fa-wand-magic-sparkles"></i>
-                <span>AI Poster Pro</span>
+
+    <div class="container">
+        <div class="intro-section">
+            <span class="main-heading">AI Poster Generation</span>
+            <h1 class="hero-title">Create Stunning AI Posters</h1>
+            <p class="hero-desc">Below this, describe your idea and generate high resolution posters instantly.</p>
+        </div>
+
+        <div class="input-group">
+            <textarea id="promptInput" placeholder="E.g., A retro sci-fi movie poster for 'Galactic Odyssey', neon colors, giant robot, detailed..."></textarea>
+        </div>
+
+        <div>
+            <label><i class="fas fa-palette"></i> Choose Poster Style</label>
+            <div class="style-wrapper">
+                <button class="style-btn active" data-style="cinematic poster art, dramatic lighting">Cinematic</button>
+                <button class="style-btn" data-style="vintage retro poster, aged paper texture">Vintage</button>
+                <button class="style-btn" data-style="minimalist typography poster, clean lines">Minimalist</button>
+                <button class="style-btn" data-style="cyberpunk neon poster, futuristic">Cyberpunk</button>
+                <button class="style-btn" data-style="art nouveau poster style, ornate details">Art Nouveau</button>
+                <button class="style-btn" data-style="propaganda poster style, bold colors">Bold Graphic</button>
             </div>
         </div>
-    </header>
 
-    <main class="container">
-        <section class="hero-section">
-            <h1 class="hero-title">Create Stunning Posters with AI</h1>
-            <p class="hero-subtitle">Transform your ideas into professional-quality posters in seconds using advanced AI technology</p>
+        <div class="advanced-toggle" id="advToggle">
+            <i class="fas fa-sliders-h"></i> Customization (Ratio & Negative)
+        </div>
+
+        <div class="advanced-options" id="advPanel">
+            <label>Poster Aspect Ratio</label>
+            <select id="aspectRatio">
+                <option value="portrait" selected>Portrait Poster (9:16) - Best Result</option>
+                <option value="square">Square (1:1)</option>
+                <option value="landscape">Landscape Banner (16:9)</option>
+            </select>
+
+            <label>Negative Prompt (Remove elements)</label>
+            <input type="text" id="negativePrompt" value="blur, low quality, watermark, text, ugly, deformed hands" placeholder="blur, ugly, bad anatomy...">
+        </div>
+
+        <button class="gen-btn" id="generateBtn">
+            GENERATE POSTER <i class="fas fa-rocket"></i>
+        </button>
+
+        <div class="result-area" id="resultArea">
+            <div class="loader" id="loader">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Designing Poster...</span>
+            </div>
+            <img src="" alt="Generated Art" class="result-img" id="resultImg">
             
-            <div class="prompt-container">
-                <div class="prompt-wrapper">
-                    <div class="prompt-input-wrapper">
-                        <input type="text" class="prompt-input" id="promptInput" placeholder="Describe your poster idea in detail...">
-                        <button class="btn-generate" id="generateBtn">
-                            <i class="fas fa-wand-magic-sparkles me-2"></i>
-                            Generate
-                        </button>
-                    </div>
-                </div>
-                
-                <button class="toggle-advanced" id="toggleAdvanced">
-                    <i class="fas fa-sliders"></i>
-                    Advanced Options
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                
-                <div class="advanced-options collapsed" id="advancedOptions">
-                    <div class="options-grid">
-                        <div class="option-group">
-                            <label>Aspect Ratio</label>
-                            <select class="custom-select" id="aspectRatio">
-                                <option value="portrait">Portrait (3:4)</option>
-                                <option value="square">Square (1:1)</option>
-                                <option value="landscape">Landscape (16:9)</option>
-                                <option value="story">Story (9:16)</option>
-                            </select>
-                        </div>
-                        <div class="option-group">
-                            <label>Quality</label>
-                            <select class="custom-select" id="quality">
-                                <option value="standard">Standard</option>
-                                <option value="hd">HD</option>
-                                <option value="4k">4K Ultra</option>
-                            </select>
-                        </div>
-                        <div class="option-group">
-                            <label>Color Scheme</label>
-                            <select class="custom-select" id="colorScheme">
-                                <option value="vibrant">Vibrant</option>
-                                <option value="pastel">Pastel</option>
-                                <option value="monochrome">Monochrome</option>
-                                <option value="neon">Neon</option>
-                            </select>
-                        </div>
-                        <div class="option-group">
-                            <label>Variations</label>
-                            <select class="custom-select" id="variations">
-                                <option value="4">4 Variations</option>
-                                <option value="6">6 Variations</option>
-                                <option value="8">8 Variations</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="style-pills">
-                <div class="style-pill active" data-style="modern">Modern</div>
-                <div class="style-pill" data-style="vintage">Vintage</div>
-                <div class="style-pill" data-style="minimalist">Minimalist</div>
-                <div class="style-pill" data-style="abstract">Abstract</div>
-                <div class="style-pill" data-style="3d">3D Render</div>
-                <div class="style-pill" data-style="illustrative">Illustrative</div>
-            </div>
-        </section>
-
-        <section class="gallery-section">
-            <div class="gallery-header">
-                <h2 class="gallery-title">Generated Posters</h2>
-                <div class="gallery-controls">
-                    <button class="btn-control active" data-filter="all">All</button>
-                    <button class="btn-control" data-filter="recent">Recent</button>
-                    <button class="btn-control" data-filter="favorites">Favorites</button>
-                </div>
-            </div>
-
-            <!-- ✅ FIXED: Added id="galleryGrid" -->
-            <div class="gallery-grid" id="galleryGrid">
-                <!-- Dynamic posters will appear here -->
-            </div>
-        </section>
-
-        <section class="features-section">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <h3 class="feature-title">Lightning Fast</h3>
-                <p class="feature-desc">Generate professional posters in seconds with our optimized AI engine</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-palette"></i>
-                </div>
-                <h3 class="feature-title">Infinite Styles</h3>
-                <p class="feature-desc">Choose from dozens of artistic styles and customize every detail</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-cloud-arrow-up"></i>
-                </div>
-                <h3 class="feature-title">Cloud Storage</h3>
-                <p class="feature-desc">Access your creations anywhere with automatic cloud backup</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <h3 class="feature-title">4K Quality</h3>
-                <p class="feature-desc">Export in ultra-high resolution perfect for print and digital use</p>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 MLSA AI Poster Generator Pro. All rights reserved.</p>
+            <button class="dl-btn" id="downloadBtn" title="Download HD Poster">
+                <i class="fas fa-download"></i>
+            </button>
         </div>
-    </footer>
-
-    <!-- ✅ FIXED: Toast notification added -->
-    <div class="toast-notification" id="toast">
-        <i class="fas fa-check-circle"></i>
-        <div>Success message goes here</div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // --- 1. SETUP VARIABLES ---
+        const promptInput = document.getElementById('promptInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultImg = document.getElementById('resultImg');
+        const loader = document.getElementById('loader');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resultArea = document.getElementById('resultArea');
+        const advToggle = document.getElementById('advToggle');
+        const advPanel = document.getElementById('advPanel');
+        const aspectRatio = document.getElementById('aspectRatio');
+        const negativePrompt = document.getElementById('negativePrompt');
+        const styleBtns = document.querySelectorAll('.style-btn');
+
+        // Default to the first button's rich style definition
+        let currentStylePrompt = styleBtns[0].dataset.style;
+        let currentImageUrl = '';
+
+        // --- 2. STYLE SELECTION ---
+        styleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                styleBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // We now grab the richer description from the data attribute
+                currentStylePrompt = btn.dataset.style;
+            });
+        });
+
+        // --- 3. TOGGLE ADVANCED MENU ---
+        advToggle.addEventListener('click', () => {
+            advPanel.classList.toggle('show');
+            if(advPanel.classList.contains('show')) {
+                 setTimeout(() => {
+                    advPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                 }, 100);
+            }
+        });
+
+        // --- 4. GENERATE LOGIC ---
+        generateBtn.addEventListener('click', () => {
+            const userPrompt = promptInput.value.trim();
+            
+            if (!userPrompt) {
+                promptInput.focus();
+                alert("Please describe your poster idea first!");
+                return;
+            }
+
+            // UI Updates
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = 'Designing... <i class="fas fa-spinner fa-spin"></i>';
+            loader.style.display = 'flex';
+            resultImg.classList.remove('loaded');
+            resultImg.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            resultArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Determine Dimensions (High Res Poster sizes)
+            let width, height;
+            if (aspectRatio.value === 'portrait') { width = 1080; height = 1920; } // Full HD Portrait
+            else if (aspectRatio.value === 'landscape') { width = 1920; height = 1080; } // Full HD Landscape
+            else { width = 1440; height = 1440; } // High Res Square
+
+            // Build strong URL prompt
+            const seed = Math.floor(Math.random() * 1000000);
+            // Combine user input with selected style and quality boosters
+            const combinedPrompt = `${userPrompt}, ${currentStylePrompt}, highly detailed, professional poster art, 8k resolution`;
+            const enhancedPrompt = encodeURIComponent(combinedPrompt);
+            const neg = encodeURIComponent(negativePrompt.value);
+
+            // Pollinations API Call
+            const url = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true&negative=${neg}&enhance=true`;
+            currentImageUrl = url;
+
+            // Load Image with timeout safety
+            const imgLoader = new Image();
+            const timeoutId = setTimeout(() => {
+                 if(loader.style.display === 'flex') {
+                     handleError();
+                 }
+            }, 25000); // 25 second timeout
+
+            imgLoader.src = url;
+            
+            imgLoader.onload = () => {
+                clearTimeout(timeoutId);
+                resultImg.src = url;
+                resultImg.style.display = 'block';
+                // Small delay for smooth fade in
+                setTimeout(() => resultImg.classList.add('loaded'), 100);
+                
+                loader.style.display = 'none';
+                downloadBtn.style.display = 'flex';
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = 'GENERATE NEW POSTER <i class="fas fa-rocket"></i>';
+            };
+
+            imgLoader.onerror = () => {
+                clearTimeout(timeoutId);
+                handleError();
+            };
+        });
+
+        function handleError() {
+             alert("Error generating poster. The AI service might be busy. Please try again.");
+             generateBtn.disabled = false;
+             generateBtn.innerHTML = 'GENERATE POSTER <i class="fas fa-rocket"></i>';
+             loader.style.display = 'none';
+        }
+
+        // --- 5. ROBUST DOWNLOAD LOGIC ---
+        downloadBtn.addEventListener('click', async () => {
+            if (!currentImageUrl) return;
+
+            const originalHTML = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 1rem;"></i>';
+
+            try {
+                const response = await fetch(currentImageUrl);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `AI-Poster-${Date.now()}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+                // Success Feedback
+                downloadBtn.innerHTML = '<i class="fas fa-check" style="color: #10b981;"></i>';
+                setTimeout(() => downloadBtn.innerHTML = originalHTML, 2000);
+            } catch (err) {
+                console.error(err);
+                window.open(currentImageUrl, '_blank');
+                downloadBtn.innerHTML = originalHTML;
+                alert("Auto-download failed. Opening in new tab.");
+            }
+        });
+    </script>
 </body>
 </html>
-
